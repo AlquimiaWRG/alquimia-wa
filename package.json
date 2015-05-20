@@ -1,0 +1,62 @@
+{
+  "name": "alquimia",
+  "description": "Angular and Wordpress, the right way.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "bower": "",
+    "grunt": "",
+    "grunt-angular-gettext": "",
+    "grunt-ngdocs": "",
+
+    "promise": "",
+    "browserify": "",
+    "debowerify": "",
+    "watchify": "",
+    "vinyl-source-stream": "",
+    "del": "",
+    "express": "",
+    "tiny-lr": "",
+    "connect-livereload": "",
+    "autoprefixer-core": "",
+    "connect-modrewrite": "",
+
+    "gulp": "",
+    "gulp-load-plugins": "",
+    "gulp-util": "",
+    "gulp-inject": "",
+    "gulp-concat": "",
+    "gulp-streamify": "",
+    "gulp-uglify": "",
+    "gulp-rev": "",
+    "gulp-templatecache": "",
+    "gulp-run": "",
+    "gulp-ruby-sass": "",
+    "gulp-sourcemaps": "",
+    "gulp-postcss": "",
+    "gulp-htmlmin": "",
+    "gulp-replace": "",
+
+    "karma": "",
+    "protractor": "",
+    "karma-junit-reporter": "",
+    "karma-chrome-launcher": "",
+    "karma-jasmine": "",
+
+    "unzip": ""
+  },
+  "scripts": {
+    "prealquimia": "npm install",
+    "alquimia": "node install.js",
+    "postalquimia": "gulp init",
+    "postinstall": "bower install",
+    "start": "open -a \"Google Chrome.app\" -n --args  'http://localhost:8000/app/' --disable-web-security",
+    "start-safe": "open 'http://localhost:8000/app/'",
+    "test": "karma start test/karma.config.js",
+    "preupdate-webdriver": "npm install",
+    "update-webdriver": "webdriver-manager update",
+    "start-server": "webdriver-manager start",
+    "protractor": "protractor test/protractor.conf.js"
+  }
+}

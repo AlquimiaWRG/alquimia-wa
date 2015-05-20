@@ -1,0 +1,18 @@
+{
+  "name": "alquimia",
+  "description": "Angular and Wordpress, the right way.",
+  "version": "0.1.0",
+  "homepage": "",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "",
+    "angular-sanitize": "",
+    "angular-loader": "",
+    "angular-mocks": "",
+    "angular-route": "",
+    "angular-gettext": "",
+
+    "restangular": ""
+  }
+}

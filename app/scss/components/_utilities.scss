@@ -1,0 +1,44 @@
+@mixin clearfix {
+  &:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin media( $min-width ) {
+  @media only screen and ( min-width: #{ $min-width } ) {
+    @content;
+  }
+}
+
+@mixin middler( $selector ) {
+  display: block;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    height: 100%;
+  }
+
+  #{ $selector } {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+@mixin retina-media( $resolution, $min-width: false ) {
+  $media-query: '';
+
+  @if ( $min-width ) {
+    $media-query: ' and ( min-width: #{ $min-width } )';
+  }
+
+  @media only screen#{ $media-query } and ( min-device-pixel-ratio: #{ $resolution } ),
+       only screen#{ $media-query } and ( min-resolution: #{ 72 * $resolution }dpi ),
+       only screen#{ $media-query } and ( min-resolution: #{ $resolution }dppx ) {
+    @content;
+  }
+}

@@ -1,0 +1,10 @@
+@charset 'UTF-8';
+
+@import 'components/utilities';
+@import 'components/grid';
+
+body {
+  background-color: #000;
+  color: rgba( #fff, .8 );
+  text-align: center;
+}
