@@ -1,0 +1,11 @@
+{
+  "useTemplates": false,
+  "useTranslations": false,
+  "useHtml5Mode": false,
+  "googleAnalyticsCode": false,
+  "productionBasePath": "/",
+  "useLiveReload": true,
+  "serverPort": 8000,
+  "livereloadServerPort": 4000,
+  "extras": []
+}

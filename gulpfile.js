@@ -1,13 +1,16 @@
-var useTemplates = false;
-var useTranslations = false;
-var useHtml5Mode = false;
-var googleAnalyticsCode = false;
-var productionBasePath = '/';
-var extras = [];
+var fs = require( 'fs' );
 
-var useLiveReload = true;
-var serverPort = 8000;
-var livereloadServerPort = 4000;
+var config = JSON.parse( fs.readFileSync( './q-config.json' ) );
+
+var useTemplates = config.useTemplates;
+var useTranslations = config.useTranslations;
+var useHtml5Mode = config.useHtml5Mode;
+var googleAnalyticsCode = config.googleAnalyticsCode;
+var productionBasePath = config.productionBasePath;
+var extras = config.extras;
+var useLiveReload = config.useLiveReload;
+var serverPort = config.serverPort;
+var livereloadServerPort = config.livereloadServerPort;
 
 var gulp = require( 'gulp' );
 var Promise = require( 'promise' );
