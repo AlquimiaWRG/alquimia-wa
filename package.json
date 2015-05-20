@@ -37,6 +37,7 @@
     "gulp-postcss": "",
     "gulp-htmlmin": "",
     "gulp-replace": "",
+    "gulp-tap": "",
 
     "karma": "",
     "protractor": "",
