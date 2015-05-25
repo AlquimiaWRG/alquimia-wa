@@ -413,7 +413,7 @@ function htaccess() {
       if ( useHtml5Mode ) {
         pipeline = pipeline.pipe( plugins.replace( /#\s*Rewrite/g, 'Rewrite' ) );
       } else {
-        pipeline = pipeline.pipe( plugins.replace( /Rewrite/g, '# Rewrite' ) );
+        pipeline = pipeline.pipe( plugins.replace( /(\s*)Rewrite/g, '$1# Rewrite' ) );
       }
 
       pipeline = pipeline.pipe( gulp.dest( root ) )
