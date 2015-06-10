@@ -335,6 +335,7 @@ function inject() {
       }
 
       tags.push( '<base href="' + baseHref + '">' );
+      tags.push( '<meta name="fragment" content="!" />' );
     }
 
     var finish = function() {
