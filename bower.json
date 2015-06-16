@@ -12,6 +12,7 @@
     "angular-mocks": "",
     "angular-route": "",
     "angular-gettext": "",
+    "angular-cookies": "",
 
     "restangular": ""
   }
