@@ -52,7 +52,7 @@ module.exports = function OAuthProvider() {
       TOKEN = 'token',
       shouldRetry = true,
       accessToken, expiration,
-      hash, loginRoute = '/', defaultRoute = '/404';
+      hash, loginRoute = '/', defaultRoute = '/';
 
   this.$get = ['$http', '$q', '$cookies', '$location', function( _$http, _$q, _$cookies, _$location ) {
     $http = _$http;
