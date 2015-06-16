@@ -9,14 +9,18 @@
  * The main goal of this module is to help developers handling `$location`'s **HTML5 mode** and communicating
  * with the Wordpress' **WP REST API** plugin and specifically with the Alquimia Wordpress plugin for the API.
  */
-var module = angular.module( 'alquimia', ['restangular'] )
+var deps = ['restangular'];
+
+if ( global.oauth ) deps.push( 'ngCookies' );
+
+var module = angular.module( 'alquimia', deps );
 
 if ( window.location && window.location.hostname === 'localhost' ) {
   module.directive( 'a', ['$location', require( './d-a' )] )
 }
 
 if ( global.oauth ) {
-  module.provider( 'oauth', require( './p-oauth' ) );
+  module.provider( 'oauth', [require( './p-oauth' )] );
 }
 
 module.provider( 'WPApi', require( './p-wp-api' ) );
