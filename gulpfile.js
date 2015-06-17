@@ -2,6 +2,7 @@ var fs = require( 'fs' );
 
 var config = JSON.parse( fs.readFileSync( './q-config.json' ) );
 
+var appName = config.appName;
 var useTemplates = config.useTemplates;
 var useTranslations = config.useTranslations;
 var useHtml5Mode = config.useHtml5Mode;
@@ -42,7 +43,6 @@ var SCRIPT_DEFAULT = 0, SCRIPT_START = 1, SCRIPT_BUILD = 2,
     SCRIPT_PRODUCE = 3, SCRIPT_INIT = 4;
 var building = false;
 var root = p.app, script = SCRIPT_DEFAULT;
-var appName = __dirname.split( '/' ).pop();
 var base = productionBasePath;
 
 gulp.task( 'default', function() {

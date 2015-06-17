@@ -6,6 +6,7 @@ var del = require( 'del' );
 console.log( 'Initializing...' );
 
 var isLite = process.argv[2] == 'lite';
+var config = JSON.parse( fs.readFileSync( './q-config.json' ) );
 
 // Q_REPLACE_DASHED -> my-app
 // Q_REPLACE_CAMELCASED -> myApp
@@ -13,7 +14,7 @@ var isLite = process.argv[2] == 'lite';
 // Q_REPLACE_SNAKECASED -> MY_APP
 // Q_REPLACE_TITLED -> MyApp
 var substitutions = {},
-    appName = __dirname.split( '/' ).pop();
+    appName = config.appName;
 
 substitutions['Q_REPLACE_DASHED'] = appName;
 substitutions['Q_REPLACE_CAMELCASED'] = appName.replace( /-([a-z])/g, function( match, capture ) {
@@ -60,7 +61,19 @@ if ( ! isLite ) {
   console.log( 'Downloading Wordpress...' );
 
   https.get( 'https://wordpress.org/latest.zip', function( response ) {
-    response.pipe( file ).on( 'finish', function() {
+    var filesize = response.headers['content-length'];
+    var downloaded = 0;
+
+    response
+    .on( 'data', function( data ) {
+      downloaded += data.length;
+      process.stdout.clearLine();
+      process.stdout.cursorTo( 0 );
+      process.stdout.write( parseInt( downloaded / filesize * 100 ) + '%' );
+    } )
+    .pipe( file )
+    .on( 'finish', function() {
+      process.stdout.write( '\n' );
       console.log( 'Extracting...' );
 
       fs.createReadStream( file.path ).pipe( unzip.Extract( { path: './' } ) ).on( 'close', function() {
