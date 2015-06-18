@@ -1,4 +1,3 @@
-var https = require( 'https' );
 var fs = require( 'fs' );
 var unzip = require( 'unzip' );
 var del = require( 'del' );
@@ -57,42 +56,29 @@ var finish = function() {
 
 if ( ! isLite ) {
   var file = fs.createWriteStream( 'wordpress.zip' );
+  var download = require( './download' );
 
   console.log( 'Downloading Wordpress...' );
 
-  https.get( 'https://wordpress.org/latest.zip', function( response ) {
-    var filesize = response.headers['content-length'];
-    var downloaded = 0;
+  download( 'https://wordpress.org/latest.zip', file, function() {
+    console.log( 'Extracting...' );
 
-    response
-    .on( 'data', function( data ) {
-      downloaded += data.length;
-      process.stdout.clearLine();
-      process.stdout.cursorTo( 0 );
-      process.stdout.write( parseInt( downloaded / filesize * 100 ) + '%' );
-    } )
-    .pipe( file )
-    .on( 'finish', function() {
-      process.stdout.write( '\n' );
-      console.log( 'Extracting...' );
+    fs.createReadStream( file.path ).pipe( unzip.Extract( { path: './' } ) ).on( 'close', function() {
+      console.log( 'Moving and cleaning stuff...' );
 
-      fs.createReadStream( file.path ).pipe( unzip.Extract( { path: './' } ) ).on( 'close', function() {
-        console.log( 'Moving and cleaning stuff...' );
+      var samplePluginPath = 'admin/wp-content/plugins/' + appName;
+      fs.renameSync( 'wordpress', 'admin' );
+      fs.renameSync( 'wp-alquimia', 'admin/wp-content/plugins/alquimia' );
+      fs.renameSync( 'wp-sample', samplePluginPath );
 
-        var samplePluginPath = 'admin/wp-content/plugins/' + appName;
-        fs.renameSync( 'wordpress', 'admin' );
-        fs.renameSync( 'wp-alquimia', 'admin/wp-content/plugins/alquimia' );
-        fs.renameSync( 'wp-sample', samplePluginPath );
+      fs.renameSync( samplePluginPath + '/sample.php',
+        samplePluginPath + '/' + appName + '.php' );
+      fs.renameSync( samplePluginPath + '/classes/class-sample.php',
+        samplePluginPath + '/classes/class-' + appName + '.php' );
 
-        fs.renameSync( samplePluginPath + '/sample.php',
-          samplePluginPath + '/' + appName + '.php' );
-        fs.renameSync( samplePluginPath + '/classes/class-sample.php',
-          samplePluginPath + '/classes/class-' + appName + '.php' );
-
-        fs.renameSync( 'wp-void', 'admin/wp-content/themes/void' );
-        fs.unlink( 'wordpress.zip' );
-        finish();
-      } );
+      fs.renameSync( 'wp-void', 'admin/wp-content/themes/void' );
+      fs.unlink( 'wordpress.zip' );
+      finish();
     } );
   } );
 } else {

@@ -45,11 +45,15 @@
     "karma-chrome-launcher": "",
     "karma-jasmine": "",
 
-    "unzip": ""
+    "unzip": "",
+    "glob": "",
+    "just-zip": ""
   },
   "scripts": {
     "prealquimia": "npm install",
     "alquimia": "node install.js",
+    "backup": "node io.js backup",
+    "restore": "node io.js restore",
     "postalquimia": "gulp init",
     "postinstall": "bower install",
     "start": "open -a \"Google Chrome.app\" -n --args  'http://localhost:8000/app/' --disable-web-security",
