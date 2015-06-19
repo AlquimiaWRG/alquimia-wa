@@ -45,29 +45,21 @@ function restore() {
     var unzip = require( 'unzip' );
 
     fs.createReadStream( src + '.zip' ).pipe( unzip.Extract( { path: './' } ) ).on( 'close', function() {
-      /* Copy q-config.json first */
-      copy( src + '/q-config.json', 'q-config.json' );
-      files.unshift();
-
-      var config = JSON.parse( fs.readFileSync( './q-config.json' ) );
-      var configFiles = readConfigFiles( config );
-
-      files = files.concat( configFiles );
-
-      for ( var i = files.length - 1; i >= 0; i-- ) {
-        copy( src + '/' + files[i], files[i] );
-      }
-
-      ( function( p, q ) {
-        copy( src + '/' + p, p );
-        copy( src + '/' + q, q );
-      } )(
-        'admin/wp-content/plugins/' + config.appName,
-        'admin/wp-content/themes/void'
-      );
-
+      _restore( src );
       rmdir( src );
+      rmdir( src + '.zip' );
     } );
+  } else {
+    _restore( src );
+    rmdir( src );
+  }
+}
+
+function _restore( what ) {
+  var children = fs.readdirSync( what );
+
+  for ( var i = children.length - 1; i >= 0; i-- ) {
+    copy( what + '/' + children[i], children[i] );
   }
 }
 
