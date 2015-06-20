@@ -51,7 +51,7 @@ module.exports = function OAuthProvider() {
       AUTHORIZE = 'authorize',
       TOKEN = 'token',
       shouldRetry = true,
-      accessToken, expiration,
+      accessToken,
       hash, loginRoute = '/', defaultRoute = '/';
 
   this.$get = ['$http', '$q', '$cookies', '$location', function( _$http, _$q, _$cookies, _$location ) {
@@ -149,6 +149,7 @@ module.exports = function OAuthProvider() {
       TYPE_IMPLICIT: TYPE_IMPLICIT,
 
       login: login,
+      logout: logout,
       setSecret: setSecret
     };
   }
@@ -206,8 +207,7 @@ module.exports = function OAuthProvider() {
 
     return $q( function( resolve, reject ) {
       /* Token cached */
-      if ( accessToken && ! isExpired( expiration ) ) {
-        setHttpDefault( accessToken );
+      if ( accessToken ) {
         resolve();
         return;
       }
@@ -217,20 +217,16 @@ module.exports = function OAuthProvider() {
 
       if ( cookie ) {
         var data = atob( cookie ).split( ':' );
-        expiration = data[1];
-
-        if ( ! isExpired( expiration ) ) {
-          accessToken = data[0];
-          setHttpDefault( data[0] );
-          resolve();
-          return;
-        }
+        accessToken = data[0];
+        setHttpDefault( data[0] );
+        resolve();
+        return;
       }
 
       /* Token from hash (with router) */
       if ( hash ) {
         accessToken = hash.access_token;
-        expiration = saveToken( hash );
+        saveToken( hash );
         resolve();
         return;
       }
@@ -258,7 +254,7 @@ module.exports = function OAuthProvider() {
           }
 
           accessToken = hash.access_token;
-          expiration = saveToken( hash );
+          saveToken( hash );
           resolve();
           return true;
         }
@@ -305,7 +301,7 @@ module.exports = function OAuthProvider() {
           } ),
         } ).then( function( response ) {
           accessToken = response.data.access_token;
-          expiration = saveToken( response.data );
+          saveToken( response.data );
           resolve();
         }, function() {
           console.error( arguments );
@@ -316,27 +312,27 @@ module.exports = function OAuthProvider() {
     } );
   }
 
+  function logout() {
+    accessToken = null;
+    $cookies.remove( COOKIE_KEY );
+  }
+
   function saveToken( data ) {
-    var now = new Date();
-    var expiration = now.getTime() + data.expires_in * 1000;
+    var expiration = new Date();
+    expiration.setTime( expiration.getTime() + data.expires_in * 1000 );
+
     var cookie = btoa( [
       data.access_token,
-      expiration,
       data.token_type,
       data.scope
     ].join( ':' ) );
 
-    $cookies.put( COOKIE_KEY, cookie );
+    $cookies.put( COOKIE_KEY, cookie, { expires: expiration } );
     setHttpDefault( data.access_token );
-    return expiration;
   }
 
   function setHttpDefault( accessToken ) {
     $http.defaults.headers.common.Authorization = 'Bearer ' + accessToken;
-  }
-
-  function isExpired( expiration ) {
-    return new Date().getTime() >= expiration;
   }
 
   function decodeHash( hash ) {
