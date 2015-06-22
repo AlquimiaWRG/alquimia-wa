@@ -47,7 +47,7 @@ function restore() {
     fs.createReadStream( src + '.zip' ).pipe( unzip.Extract( { path: './' } ) ).on( 'close', function() {
       _restore( src );
       rmdir( src );
-      rmdir( src + '.zip' );
+      fs.unlinkSync( src + '.zip' );
     } );
   } else {
     _restore( src );
