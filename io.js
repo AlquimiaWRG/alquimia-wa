@@ -47,7 +47,7 @@ function restore() {
     fs.createReadStream( src + '.zip' ).pipe( unzip.Extract( { path: './' } ) ).on( 'close', function() {
       _restore( src );
       rmdir( src );
-      fs.unlinkSync( src + '.zip' );
+      rmdir( src + '.zip' );
     } );
   } else {
     _restore( src );
@@ -119,26 +119,17 @@ function readConfigFiles( config ) {
 function copy( src, dest, globsCompiled ) {
   globsCompiled = !! globsCompiled;
 
-  if ( ! globsCompiled ) {
-    var matches = glob.sync( src );
-    for ( var i = matches.length - 1; i >= 0; i-- ) {
-      copy( matches[i], dest, true );
-    }
-    return;
-  }
+  var splitSrc = src.split( '/' );
+  var splitDest = dest.split( '/' );
 
-  var diff = [];
-  src = src.split( '/' );
-  dest = dest.split( '/' );
-
-  var difference = src.length - dest.length;
+  var difference = splitSrc.length - splitDest.length;
   var convert = function( path ) {
     return path;
   };
 
   if ( difference > 0 ) {
     /* src path is longer (dest is outside) */
-    difference = src.slice( 0, difference ).join( '/' ) + '/';
+    difference = splitSrc.slice( 0, difference ).join( '/' ) + '/';
     var pattern = new RegExp( '^' + difference );
 
     convert = function( path ) {
@@ -146,15 +137,21 @@ function copy( src, dest, globsCompiled ) {
     };
   } else if ( difference < 0 ) {
     /* dest path is longer (dest is inside) */
-    var root = dest.slice( 0, -difference ).join( '/' );
-    mkdir( root );
+    var root = splitDest.slice( 0, -difference ).join( '/' );
+    if ( globsCompiled ) mkdir( root );
 
     convert = function( path ) {
       return root + '/' + path;
     };
   }
 
-  src = src.join( '/' );
+  if ( ! globsCompiled ) {
+    var matches = glob.sync( src );
+    for ( var i = matches.length - 1; i >= 0; i-- ) {
+      copy( matches[i], convert( matches[i] ), true );
+    }
+    return;
+  }
 
   if ( fs.lstatSync( src ).isDirectory() ) {
     walkFileTree( src, function( path, isDir ) {
