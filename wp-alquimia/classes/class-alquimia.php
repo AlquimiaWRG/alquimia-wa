@@ -165,9 +165,7 @@ class Alquimia {
       require_once ALQUIMIA__PLUGIN_DIR . 'api/class-q-json-customposttype.php';
 
       foreach ( $this->api_endpoints as $api_endpoint ) {
-        $endpoint_filename = str_replace( '-', '', $api_endpoint );
-
-        require_once $this->plugin_dir . "api/class-$this->api_prefix-json-$endpoint_filename.php";
+        require_once $this->plugin_dir . "api/class-$this->api_prefix-json-$api_endpoint.php";
 
         $object = strtoupper( $this->api_prefix ) . '_JSON_';
         $matches = explode( '-', $api_endpoint );
