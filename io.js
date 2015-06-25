@@ -97,6 +97,10 @@ function readConfigFiles( config ) {
     var ret = [];
 
     for ( var i = files.length - 1; i >= 0; i-- ) {
+      if ( typeof( files[i] ) !== 'object' || ! files[i].length ) {
+        throw new Error( 'extras and backup properties of q-config must be Arrays of Arrays' );
+      }
+
       for ( var j = files[i].length - 1; j >= 0; j-- ) {
         ret.push( files[i][j] );
       }
