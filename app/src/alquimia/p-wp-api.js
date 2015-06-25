@@ -4,7 +4,7 @@
  * @requires restangular
  * @author    Mauro Constantinescu <mauro.constantinescu@gmail.com>
  * @copyright © 2015 White, Red & Green Digital S.r.l.
- * 
+ *
  * @description
  * Allows to easily communicate with the Wordpress' **WP REST API** plugin and specifically with the
  * Alquimia Wordpress plugin for the API.
@@ -23,17 +23,17 @@ module.exports = function WPApiProvider() {
    * @ngdoc    method
    * @name     WPApi
    * @methodOf alquimia.alquimia:WPApi
-   * 
+   *
    * @param    {String} endpoint
    * The API endpoint name. This is defined by the API URL entry point fragment. For example, for the default "posts"
    * endpoint, handled by `WP_JSON_Posts`, the URL is `http://your.domain.com/wordpress/wp-json/posts` and the
    * `endpoint` parameter is "posts"
-   * 
+   *
    * @param    {Object} config
    * A configuration object. It can contain two keys that defines the WPApi instance behaviour:
    * - `filters`: it can contain up to three objects, with keys `defaults`, `items` and `item`. The properties of these
    *   three object can be atomic values or functions and are used to send GET parameters out to the API. For example:
-   *   
+   *
    *   ```
    *   new WPApi( 'posts', {
    *     filters: {
@@ -47,18 +47,18 @@ module.exports = function WPApiProvider() {
    *     }
    *   } );
    *   ```
-   *   
+   *
    *   Means: send a `filter[lang]` parameter for every request, executing the `getCurrentLanguage` function and
    *   sending the returned value. When requesting all items (sending a request to `posts`), disable the pagination
    *   through a `filter[posts_per_page]=-1` parameter.
-   *   
+   *
    *   You can add filter when requesting a single item (`posts/post-slug`) too, putting something into the `item` key.
    * - `transform`: a function used to transform the items returned from the API before they are cached and returned.
    *   It is called with two arguments:
-   *   
+   *
    *   `items`, an array of items from the API. If {@link alquimia.alquimia:WPApi#methods_getItem getItem} was called,
    *   this will contain an array with a single item;
-   *   
+   *
    *   `isCached`, a boolean that indicates whether the retrieved items come from cache or not.
    *
    *    Example:
@@ -110,7 +110,7 @@ module.exports = function WPApiProvider() {
      * @ngdoc    method
      * @name     getItems
      * @methodOf alquimia.alquimia:WPApi
-     * 
+     *
      * @param {Boolean} flush
      * If `false` and this method was called before, the network request is skipped and the items are taken from
      * cache. If `true`, the network request is sent even if cached items are available.
@@ -120,6 +120,10 @@ module.exports = function WPApiProvider() {
      * from `config.filters.defaults` are merged with and overridden by items filters from `config.filters.items`,
      * that are merged with and overridden by these filters.
      *
+     * @param {Object} params
+     * An optional set of additional parameters to be sent along the API request.
+     * Properties of this object are passed outside the `filter[]` array.
+     *
      * @returns {Promise}
      * A Javascript Promise. The `resolve` function is called with a `Restangular` response as the only argument.
      * The `reject` function is called with a `WP_Error` from WP REST API`, that contains a `code` and a `message`
@@ -128,10 +132,12 @@ module.exports = function WPApiProvider() {
      * @description
      * Sends a request for getting all the items from the WP REST API endpoint.
      */
-    this.getItems = function( flush, filters ) {
+    this.getItems = function( flush, filters, params ) {
+      params = params || {};
       return $q( function( resolve, reject ) {
         filters = angular.extend( {}, defaultFilters, itemsFilters, filters );
         filters = parseFilters( filters );
+        filters = angular.extend( filters, params );
 
         if ( valid && ! flush && items.length > 1 ) {
           if ( transform ) {
@@ -154,7 +160,7 @@ module.exports = function WPApiProvider() {
           valid = true;
           resolve( items );
         }, function( error ) {
-          reject( error.data[0] );
+          return error.data[0];
         } );
       } );
     };
@@ -167,7 +173,7 @@ module.exports = function WPApiProvider() {
      * @param {String} slug
      * The post slug to be requested. Usually, it is taken directly from the
      * {@link alquimia.alquimia:WPApi#methods_getItems getItems} response.
-     * 
+     *
      * @param {Boolean} flush
      * If `false` and this method was called before, the network request is skipped and the items are taken from
      * cache. If `true`, the network request is sent even if cached items are available.
@@ -177,6 +183,10 @@ module.exports = function WPApiProvider() {
      * from `config.filters.defaults` are merged with and overridden by items filters from `config.filters.item`,
      * that are merged with and overridden by these filters.
      *
+     * @param {Object} params
+     * An optional set of additional parameters to be sent along the API request.
+     * Properties of this object are passed outside the `filter[]` array.
+     *
      * @returns {Promise}
      * A Javascript Promise. The `resolve` function is called with a `Restangular` response as the only argument.
      * The `reject` function is called with a `WP_Error` from WP REST API`, that contains a `code` and a `message`
@@ -185,7 +195,7 @@ module.exports = function WPApiProvider() {
      * @description
      * Sends a request for getting one item from the WP REST API endpoint.
      */
-    this.getItem = function( slug, flush, filters ) {
+    this.getItem = function( slug, flush, filters, params ) {
       return $q( function( resolve, reject ) {
         if ( ! flush && ( items.length > 1 || ( items.length && items[0].slug == slug ) ) ) {
           for ( var i = items.length - 1; i >= 0; i-- ) {
@@ -207,9 +217,10 @@ module.exports = function WPApiProvider() {
             }
           }
         }
-
+        params = params || {};
         filters = angular.extend( {}, defaultFilters, itemFilters, filters );
         filters = parseFilters( filters );
+        filters = angular.extend( filters, params );
 
         backend.one( slug ).get( filters ).then( function( response ) {
           items = [response];
@@ -221,7 +232,7 @@ module.exports = function WPApiProvider() {
 
           resolve( response );
         }, function( error ) {
-          reject( error.data[0] );
+          return error.data[0];
         } );
       } );
     };
@@ -270,5 +281,6 @@ module.exports = function WPApiProvider() {
 
       return ret;
     }
+
   }
 };
