@@ -12,9 +12,9 @@
 module.exports = function WPApiProvider() {
   var $q, Restangular, defaultFilters;
 
-  this.$get = ['$q', 'Restangular', function WPApiFactory( _$q, _Restangular ) {
+  this.$get = ['$q', 'RestFullResponse', function WPApiFactory( _$q, RestFullResponse ) {
     $q = _$q;
-    Restangular = _Restangular;
+    Restangular = RestFullResponse;
 
     return WPApi;
   }];
@@ -53,32 +53,22 @@ module.exports = function WPApiProvider() {
    *   through a `filter[posts_per_page]=-1` parameter.
    *
    *   You can add filter when requesting a single item (`posts/post-slug`) too, putting something into the `item` key.
-   * - `transform`: a function used to transform the items returned from the API before they are cached and returned.
-   *   It is called with two arguments:
+   * - `transform`: a function used to transform each item returned from the API before they are cached and returned.
+   *   It is called with the item and the response headers as the arguments:
    *
-   *   `items`, an array of items from the API. If {@link alquimia.alquimia:WPApi#methods_getItem getItem} was called,
-   *   this will contain an array with a single item;
+   *   Example:
    *
-   *   `isCached`, a boolean that indicates whether the retrieved items come from cache or not.
+   *   ```
+   *   new WPApi( 'posts', {
+   *     transform: function( item, headers ) {
+   *       item.totalPages = headers['x-wp-totalpages'];
+   *       item.totalPosts = headers['x-wp-total'];
+   *       return item;
+   *     }
+   *   } );
+   *   ```
    *
-   *    Example:
-   *
-   *    ```
-   *    new WPApi( 'posts', {
-   *      transform: function( items, isCached ) {
-   *        if ( ! isCached ) {
-   *          // Loop through the items and edit them...
-   *          // Cached items will be already edited
-   *        }
-   *
-   *        if ( ! isCached ) {
-   *          $rootScope.broadcast( 'itemsreceived' );
-   *        }
-   *
-   *        return items;
-   *      }
-   *    } );
-   *    ```
+   *   Remember to return the item!
    *
    * @returns  {Object}
    * A `WPApi` instance mapped to the provided `endpoint` and configured to send `filters` and `transform`
@@ -89,7 +79,7 @@ module.exports = function WPApiProvider() {
    */
   function WPApi( endpoint, config ) {
     var backend = Restangular.all( endpoint );
-    var items = [];
+    var items = {}, cache = {};
     var valid = true;
     var defaultFilters = {}, itemsFilters = {}, itemFilters = {};
     var transform;
@@ -134,31 +124,47 @@ module.exports = function WPApiProvider() {
      */
     this.getItems = function( flush, filters, params ) {
       params = params || {};
+
       return $q( function( resolve, reject ) {
         filters = angular.extend( {}, defaultFilters, itemsFilters, filters );
         filters = parseFilters( filters );
         filters = angular.extend( filters, params );
 
-        if ( valid && ! flush && items.length > 1 ) {
-          if ( transform ) {
-            var transformedItems = transform( items, true );
-            if ( transformedItems ) items = transformedItems;
+        var cacheKey = getCacheKey( filters );
+
+        /* Items from cache */
+        if ( valid && ! flush && cache[cacheKey] ) {
+          var res = [];
+
+          for ( var i = cache[cacheKey].length - 1; i >= 0; i-- ) {
+            res.unshift( items[cache[cacheKey][i]] );
           }
 
-          resolve( items );
+          resolve( res );
           return;
         }
 
+        /* Items from the API */
         backend.getList( filters ).then( function( response ) {
-          items = response;
+          var headers = response.headers();
+          var res = [];
+          cache[cacheKey] = [];
 
-          if ( transform ) {
-            var transformedItems = transform( items, false );
-            if ( transformedItems ) items = transformedItems;
+          for ( var i = response.data.length - 1; i >= 0; i-- ) {
+            var item = response.data[i];
+            var slug = item.slug;
+
+            item.route = item.route + '/' + item.ID;
+
+            if ( transform ) item = transform( item, headers );
+
+            items[slug] = item;
+            cache[cacheKey].unshift( slug );
+            res.unshift( item );
           }
 
           valid = true;
-          resolve( items );
+          resolve( res, true );
         }, function( error ) {
           return error.data[0];
         } );
@@ -197,40 +203,29 @@ module.exports = function WPApiProvider() {
      */
     this.getItem = function( slug, flush, filters, params ) {
       return $q( function( resolve, reject ) {
-        if ( ! flush && ( items.length > 1 || ( items.length && items[0].slug == slug ) ) ) {
-          for ( var i = items.length - 1; i >= 0; i-- ) {
-            if ( items[i].slug == slug ) {
-              if ( transform ) {
-                var transformedItems = transform( [items[i]], true );
-                if ( transformedItems ) items[i] = transformedItems[0];
-              }
-
-              /*
-              If items were cached, then the route is wrong (is the one returned from getItems())
-              and calling methods of the item would cause 500 errors from the server. To prevent
-              this, we reset the item route
-               */
-              items[i].route = endpoint + '/' + items[i].slug;
-
-              resolve( items[i] );
-              return;
-            }
-          }
+        if ( ! flush && items[slug] ) {
+          /* Item from cache */
+          resolve( items[slug] );
+          return;
         }
+
+        /* Item from API */
         params = params || {};
         filters = angular.extend( {}, defaultFilters, itemFilters, filters );
         filters = parseFilters( filters );
         filters = angular.extend( filters, params );
 
         backend.one( slug ).get( filters ).then( function( response ) {
-          items = [response];
+          var item = response.data;
+          var headers = response.headers();
 
           if ( transform ) {
-            var transformedItems = transform( items, false );
-            if ( transformedItems ) items[0] = transformedItems[0];
+            item = transform( item, headers );
           }
 
-          resolve( response );
+          items[slug] = item;
+
+          resolve( item );
         }, function( error ) {
           return error.data[0];
         } );
@@ -243,6 +238,7 @@ module.exports = function WPApiProvider() {
      * @methodOf alquimia.alquimia:WPApi
      *
      * @description
+     * TODO: now that caching depends on filters, this method may be useless
      * Schedule the cache to be discarded on the next request. This is useful when you know that a request is
      * about to be sent, but the object that is going to send it doesn't know that the cache should be discarded.
      *
@@ -250,7 +246,7 @@ module.exports = function WPApiProvider() {
      * post that is in French, but your request has a GET parameter that says "German", it will return the German
      * post. You have a dropdown menu on your post page that lets a user pick a language.
      *
-     * Now, let's say that a user lands on the French category page that shows all the posts with that category,
+     * Now, let's say that a user lands on the French category page that shows all the posts within that category,
      * following a link a friend gave him, but he/she only speaks German. He/She changes language, and your
      * application does this:
      *
@@ -282,5 +278,15 @@ module.exports = function WPApiProvider() {
       return ret;
     }
 
+    function getCacheKey( filters ) {
+      var a = [];
+
+      for ( var i in filters ) {
+        a.push( i + filters[i] );
+      }
+
+      a.sort();
+      return 'qf_' + a.join( '' );
+    }
   }
 };
