@@ -16,9 +16,9 @@
  *
  * This directive requires a `<base>` tag into your page `<head>`. This is required by `$location` too,
  * in HTML5 mode. If you are not planning to use HTML5 mode, then this directive is useless for you.
- * 
+ *
  * # Example
- * 
+ *
  * If your application is running at `http://localhost:8000/app` and you want to link to `/home/products`,
  * you should normally write something like:
  *
@@ -55,7 +55,7 @@ module.exports = function( $location ) {
       }
 
       var stopWatching = scope.$watch( 'ngHref', function( value ) {
-        if ( value ) {
+        if ( value && ! absoluteUrlPattern.test( value ) ) {
           baseUrl = baseUrl || getBaseUrl();
           if ( ! baseUrl ) stopWatching();
 
