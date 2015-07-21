@@ -122,7 +122,6 @@ class Alquimia {
     add_action( 'plugins_loaded', array( $this, 'init' ) );
     add_action( 'init', array( $this, 'register_data' ) );
     add_action( 'wp_json_server_before_serve', array( $this, 'init_api' ) );
-    add_filter( 'determine_current_user', array( $this, 'authorize' ), 11 );
   }
 
   public function init() {
@@ -368,50 +367,6 @@ class Alquimia {
     foreach ( $this->caps as $cap ) {
       if ( $assign ) $role->add_cap( $cap . $post_type );
       else $role->remove_cap( $cap . $post_type );
-    }
-  }
-
-  /**
-   * Called by Wordpress when determining current user. Uses the OAuth2 server if available
-   * for logging in a user if a valid OAuth request is available.
-   * @param  integer $user_id The user ID, or false or 0 if no user was found yet.
-   * @return integer          The user ID if one is found.
-   */
-  public function authorize( $user_id ) {
-    /* If a user was already found, skip this */
-    if ( $user_id && $user_id > 0 ) return $user_id;
-
-    /* Find whether we have the OAuth server available or not */
-    if ( defined( 'WPOAUTH_FILE' ) ) {
-      /* If the OAuth server is currently unavailable, skip this */
-      $o = get_option( 'wo_options' );
-      if ( $o['enabled'] == 0 ) return $user_id;
-
-      /* Use the WP OAuth autoloader */
-      $wo_dir = dirname( WPOAUTH_FILE );
-      $wo_autoload_file = $wo_dir . '/library/OAuth2/Autoloader.php';
-
-      if ( is_readable( $wo_autoload_file ) ) {
-        require_once $wo_autoload_file;
-
-        /* Load what we need */
-        OAuth2\Autoloader::register();
-
-        $storage = new OAuth2\Storage\Wordpressdb();
-        $server = new OAuth2\Server( $storage );
-        $request = OAuth2\Request::createFromGlobals();
-
-        /* Find out if this is a valid request */
-        if ( $server->verifyResourceRequest( $request ) ) {
-          /* Get access token data if applicable */
-          $token = $server->getAccessTokenData( $request );
-
-          if ( isset( $token['user_id'] ) && $token['user_id'] > 0 ) {
-            /* Set the current user */
-            return $token['user_id'];
-          }
-        }
-      }
     }
   }
 }
