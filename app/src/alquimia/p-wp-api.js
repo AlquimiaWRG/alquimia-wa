@@ -165,8 +165,9 @@ module.exports = function WPApiProvider() {
 
           valid = true;
           resolve( res, true );
-        }, function( error ) {
-          return error.data[0];
+        }, function() {
+          reject.apply( this, arguments );
+          return;
         } );
       } );
     };
@@ -227,7 +228,8 @@ module.exports = function WPApiProvider() {
 
           resolve( item );
         }, function( error ) {
-          return error.data[0];
+          reject.apply( this, arguments );
+          return;
         } );
       } );
     };
