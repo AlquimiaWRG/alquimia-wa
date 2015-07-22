@@ -106,9 +106,6 @@ class Alquimia {
       _doing_it_wrong( 'Alquimia::__construct', 'The plugin name must be overridden', ALQUIMIA__VERSION );
     }
 
-    $this->caps = array( 'edit_', 'read_', 'delete_', 'edit_', 'edit_others_', 'publish_', 'read_private_', 'delete_',
-      'delete_private_', 'delete_published_', 'delete_others_', 'edit_private_', 'edit_published_' );
-
     register_activation_hook( $this->plugin_dir . "$this->name.php", array( $this, 'activate' ) );
     register_deactivation_hook( $this->plugin_dir . "$this->name.php", array( $this, 'deactivate' ) );
 
@@ -164,7 +161,9 @@ class Alquimia {
       require_once ALQUIMIA__PLUGIN_DIR . 'api/class-q-json-customposttype.php';
 
       foreach ( $this->api_endpoints as $api_endpoint ) {
-        require_once $this->plugin_dir . "api/class-$this->api_prefix-json-$api_endpoint.php";
+        $endpoint_filename = str_replace( '-', '', $api_endpoint );
+
+        require_once $this->plugin_dir . "api/class-$this->api_prefix-json-$endpoint_filename.php";
 
         $object = strtoupper( $this->api_prefix ) . '_JSON_';
         $matches = explode( '-', $api_endpoint );
@@ -352,21 +351,6 @@ class Alquimia {
         } );
       </script>
       <?php
-    }
-  }
-
-  /**
-   * Adds or removes a capability from a user role
-   * @param  string  $role      The user role which capabilities should be changed
-   * @param  string  $post_type The post type we are talking about
-   * @param  boolean $assign    true for adding capabilities, false for removing them
-   */
-  protected function toggle_cap( $role, $post_type, $assign ) {
-    $role = get_role( $role );
-
-    foreach ( $this->caps as $cap ) {
-      if ( $assign ) $role->add_cap( $cap . $post_type );
-      else $role->remove_cap( $cap . $post_type );
     }
   }
 }

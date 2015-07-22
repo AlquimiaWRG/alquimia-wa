@@ -39,7 +39,7 @@
  * ```
  */
 module.exports = function OAuthProvider() {
-  var $http, $q, $cookies, $location;
+  var $window, $http, $q, $cookies, $location;
 
   var CLIENT_ID,
       CLIENT_SECRET,
@@ -52,9 +52,12 @@ module.exports = function OAuthProvider() {
       TOKEN = 'token',
       shouldRetry = true,
       accessToken,
-      hash, loginRoute = '/', defaultRoute = '/';
+      loginRoute = '/', defaultRoute = '/';
 
-  this.$get = ['$http', '$q', '$cookies', '$location', function( _$http, _$q, _$cookies, _$location ) {
+  this.$get = ['$window', '$http', '$q', '$cookies', '$location',
+    function( _$window, _$http, _$q, _$cookies, _$location ) {
+
+    $window = _$window;
     $http = _$http;
     $q = _$q;
     $cookies = _$cookies;
@@ -62,19 +65,6 @@ module.exports = function OAuthProvider() {
 
     return OAuth;
   }];
-
-  this.setHash = function( _hash ) {
-    if ( _hash ) {
-      _hash = decodeHash( _hash );
-
-      if ( _hash.access_token ) {
-        hash = _hash;
-        return true;
-      }
-    }
-
-    return false;
-  };
 
   /**
    * @ngdoc    method
@@ -223,20 +213,14 @@ module.exports = function OAuthProvider() {
         return;
       }
 
-      /* Token from hash (with router) */
-      if ( hash ) {
-        accessToken = hash.access_token;
-        saveToken( hash );
-        resolve();
-        return;
-      }
+      var hash = $window.location.hash.substring( 1 );
 
       /*
       Token from hash (without router or in html5 mode)
       Enclose everything in a function so we can set a hash variable
       without conflicts with the already declared one
        */
-      if ( ( function() {
+      if ( hash && ( function() {
         var hash = decodeHash( location.hash.substring( 1 ) );
 
         if ( hash.access_token ) {

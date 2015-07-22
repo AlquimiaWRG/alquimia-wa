@@ -28,21 +28,12 @@ if ( window.location && window.location.hostname === 'localhost' ) {
 
 if ( global.oauth ) {
   module.provider( 'oauth', [require( './p-oauth' )] );
-
-  try {
-    angular.module( 'ngRoute' );
-
-    module.config( ['$routeProvider', 'oauthProvider', function( $routeProvider, oauthProvider ) {
-      $routeProvider.otherwise( {
-        redirectTo: function( params, hash, search ) {
-          if ( oauthProvider.setHash( hash ) ) return oauthProvider.getLoginRoute();
-          return oauthProvider.getDefaultRoute();
-        }
-      } );
-    } ] );
-  } catch ( e ) {
-    /* ngRoute doesn't exist. No one cares. */
-  }
 }
+
+module.factory( 'RestFullResponse', ['Restangular', function( Restangular ) {
+  return Restangular.withConfig( function( RestangularConfigurer ) {
+    RestangularConfigurer.setFullResponse( true );
+  } );
+}] );
 
 module.provider( 'WPApi', require( './p-wp-api' ) );
