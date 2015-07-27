@@ -1,0 +1,27 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"X-Generator: Poedit 1.8.2\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;_;gettext;gettext_noop;_x:1,2c;_ex:1,2c;_n:1,2c\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: api/class-q-sluggedcustomposttype.php:15
+msgid "Invalid post slug"
+msgstr ""
+
+#: classes/class-alquimia.php:339
+msgid "Update"
+msgstr ""
+
+#: classes/class-alquimia.php:361
+msgid "Application address (URL)"
+msgstr ""
