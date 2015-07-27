@@ -10,33 +10,6 @@
  * (see {@link alquimia.alquimia:oauth#methods_login login}). It
  * works with or without the `angular-route` module installed and
  * with or without the `$location`'s html5Mode enabled.
- *
- * If you do have the `angular-route` module installed, though, you have
- * to remove calls to the `$routeProvider.otherwise` method if you have
- * any, and use {@link alquimia.alquimia:oauth#methods_setLoginRoute setLoginRoute}
- * and {@link alquimia.alquimia:oauth#methods_setDefaultRoute setDefaultRoute}
- * instead.
- *
- * # Configuration
- *
- * The `oauthProvider` allows you to make the oauth module work with
- * the `angular-route` module installed. Since the *implicit OAuth2
- * authentication* workflow loads the page with a URL hash set, the
- * oauth module must intercept the hash in order to retrieve the access
- * token. This means that you **can't** use the `$routeProvider.otherwise`
- * method. You can set a default path by using the
- * {@link alquimia.alquimia:oauth#methods_setDefaultRoute setLoginRoute}.
- * You also have to provide the path to your application login page to the
- * oauth module by calling the
- * {@link alquimia.alquimia:oauth#methods_setLoginRoute setLoginRoute}
- * method.
- *
- * ```
- * angular.module( 'myModule' ).config( ['oauthProvider', function( oauthProvider ) {
- *   oauthProvider.setLoginRoute( '/login' );
- *   oauthProvider.setDefaultRoute( '/404' );
- * }] );
- * ```
  */
 module.exports = function OAuthProvider() {
   var $window, $http, $q, $cookies, $location;
@@ -65,41 +38,6 @@ module.exports = function OAuthProvider() {
 
     return OAuth;
   }];
-
-  /**
-   * @ngdoc    method
-   * @name     setLoginRoute
-   * @methodOf alquimia.alquimia:oauth
-   *
-   * @param {string} route The application login route, in the same format you would use
-   *                       when using the `$routeProvider`.
-   *
-   * @description
-   * Can be called in the configuration phase.
-   * Sets the login route. When an access token is sent from the server and the
-   * `angular-route` module is installed, the oauth module redirects the user
-   * to the loginRoute with the access token saved. Following calls to
-   * {@link alquimia.alquimia:oauth#methods_login login} method resolve immediately.
-   */
-  this.setLoginRoute = function( route ) { loginRoute = route; };
-
-  /**
-   * @ngdoc    method
-   * @name     setDefaultRoute
-   * @methodOf alquimia.alquimia:oauth
-   *
-   * @param {string} route The application default route (e.g. 404 page), in the same format you
-   *                       would use when using the `$routeProvider`.
-   *
-   * @description
-   * Can be called in the configuration phase.
-   * Sets the default route. When the `$routeProvider`'s `otherwise` function is invoked and the
-   * hash doesn't contain a token, the oauth module will return this route for redirecting.
-   */
-  this.setDefaultRoute = function( route ) { defaultRoute = route; };
-
-  this.getLoginRoute = function() { return loginRoute; };
-  this.getDefaultRoute = function() { return defaultRoute; };
 
   /**
    * @ngdoc    method
