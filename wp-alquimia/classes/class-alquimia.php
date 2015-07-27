@@ -114,14 +114,18 @@ class Alquimia {
       add_action( 'admin_init', array( $this, 'rename_menus' ) );
       add_action( 'admin_footer-post.php', array( $this, 'populate_post_status_dropdown' ) );
       add_action( 'admin_footer-post-new.php', array( $this, 'populate_post_status_dropdown' ) );
+      add_action( 'admin_init', array( $this, 'add_application_url_setting' ) );
     }
 
     add_action( 'plugins_loaded', array( $this, 'init' ) );
     add_action( 'init', array( $this, 'register_data' ) );
     add_action( 'wp_json_server_before_serve', array( $this, 'init_api' ) );
+    add_filter( 'post_link', array( $this, 'edit_post_link' ) );
   }
 
   public function init() {
+    load_plugin_textdomain( 'alquimia', false, 'alquimia/languages' );
+
     /* Eventually load the languages for the plugin that is extending this */
     if ( $this->name != 'alquimia' ) {
       $path = "$this->name/languages";
@@ -351,6 +355,44 @@ class Alquimia {
         } );
       </script>
       <?php
+    }
+  }
+
+  /**
+   * Adds the "Application address (URL)" to general settings, for the Angular integration.
+   */
+  public function add_application_url_setting() {
+    register_setting( 'general', 'application_url', 'esc_attr' );
+    add_settings_field( 'application_url',
+      '<label for="application_url">' . __( 'Application address (URL)', 'alquimia' ) . '</label>',
+      array( $this, 'print_application_url_setting' ),
+      'general' );
+  }
+
+  /**
+   * Prints the "Application address (URL)" markup.
+   */
+  public function print_application_url_setting() {
+    $value = get_option( 'application_url' );
+    ?>
+    <input type="text" id="application_url" name="application_url" class="regular-text code"
+     value="<?php echo $value; ?>">
+    <?php
+  }
+
+  /**
+   * Edits the post permalinks for redirecting to the client.
+   * @param  string $url The current permalink.
+   * @return string      The new permalink.
+   */
+  public function edit_post_link( $url ) {
+    $application_url = get_option( 'application_url' );
+
+    if ( ! empty( $application_url ) ) {
+      $protocol = is_ssl() ? 'https' : 'http';
+      $port = $_SERVER['SERVER_PORT'] == 80 ? '' : ':' . $_SERVER['SERVER_PORT'];
+      $host = $_SERVER['HTTP_HOST'];
+      return preg_replace( "#$protocol://$host$port/$this->name/admin/#", $application_url, $url );
     }
   }
 }
