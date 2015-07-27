@@ -24,8 +24,7 @@ module.exports = function OAuthProvider() {
       AUTHORIZE = 'authorize',
       TOKEN = 'token',
       shouldRetry = true,
-      accessToken,
-      loginRoute = '/', defaultRoute = '/';
+      accessToken;
 
   this.$get = ['$window', '$http', '$q', '$cookies', '$location',
     function( _$window, _$http, _$q, _$cookies, _$location ) {
