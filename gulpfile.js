@@ -320,7 +320,7 @@ function inject() {
 
     var createLink = function( name ) {
       return '<link rel="stylesheet" href="' + p.stylesDest + '/' +
-        name + '.css"></script>';
+        name + '.css">';
     };
 
     var tags = [''];
