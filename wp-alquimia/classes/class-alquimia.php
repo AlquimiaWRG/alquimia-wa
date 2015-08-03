@@ -120,7 +120,6 @@ class Alquimia {
     add_action( 'plugins_loaded', array( $this, 'init' ) );
     add_action( 'init', array( $this, 'register_data' ) );
     add_action( 'wp_json_server_before_serve', array( $this, 'init_api' ) );
-    add_filter( 'post_link', array( $this, 'edit_post_link' ) );
   }
 
   public function init() {
@@ -378,21 +377,5 @@ class Alquimia {
     <input type="text" id="application_url" name="application_url" class="regular-text code"
      value="<?php echo $value; ?>">
     <?php
-  }
-
-  /**
-   * Edits the post permalinks for redirecting to the client.
-   * @param  string $url The current permalink.
-   * @return string      The new permalink.
-   */
-  public function edit_post_link( $url ) {
-    $application_url = get_option( 'application_url' );
-
-    if ( ! empty( $application_url ) ) {
-      $protocol = is_ssl() ? 'https' : 'http';
-      $port = $_SERVER['SERVER_PORT'] == 80 ? '' : ':' . $_SERVER['SERVER_PORT'];
-      $host = $_SERVER['HTTP_HOST'];
-      return preg_replace( "#$protocol://$host$port/$this->name/admin/#", $application_url, $url );
-    }
   }
 }
