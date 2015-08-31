@@ -122,7 +122,7 @@ function createDist() {
   return new Promise( function( fulfil ) {
     plugins.util.log( 'Initializing build...' );
 
-    del( p.dist, function() {
+    del( p.dist ).then( function() {
       var pipeline = gulp.src( p.app + '/index.html' );
 
       if ( googleAnalyticsCode ) {
@@ -153,7 +153,7 @@ function notifyLiveReload( file ) {
 
 function styles() {
   return new Promise( function( fulfil ) {
-    del( path( root, p.stylesDest, '*' ), function() {
+    del( path( root, p.stylesDest, '*' ) ).then( function() {
       plugins.util.log( 'Rebuilding application styles' );
 
       var sassOptions = { precision: 5 };
@@ -202,7 +202,7 @@ function scripts() {
 
     function rebundle() {
       return new Promise( function( fulfil ) {
-        del( path( root, p.scriptsDest, '/app*.js' ), function() {
+        del( path( root, p.scriptsDest, '/app*.js' ) ).then( function() {
           var pipeline = b.bundle()
             .pipe( source( 'app.js' ) )
             .pipe( gulp.dest( path( root, p.scriptsDest ) ) )
@@ -219,7 +219,7 @@ function scripts() {
 
 function templates() {
   return new Promise( function( fulfil ) {
-    del( path( root, p.scriptsDest, 'templates*.js' ), function() {
+    del( path( root, p.scriptsDest, 'templates*.js' ) ).then( function() {
       if ( useTemplates ) {
         plugins.util.log( 'Rebuilding templates' );
 
@@ -258,7 +258,7 @@ function copyExtra() {
       if ( dest[dest.length - 1] == '**' ) dest.pop();
       dest = dest.join( '/' );
 
-      del( dest, ( function( i, dest ) {
+      del( dest ).then( ( function( i, dest ) {
         return function() {
           plugins.util.log( 'Copying ' + plugins.util.colors.green( dest ) );
           gulp.src( p.extra[i] ).pipe( gulp.dest( p.dist + '/' + dest ) );
