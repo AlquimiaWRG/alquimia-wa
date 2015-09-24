@@ -315,7 +315,7 @@ function inject() {
   return new Promise( function( fulfil ) {
     var createScript = function( name ) {
       return '<script type="text/javascript" src="' + p.scriptsDest + '/' +
-        name + '.js"></script>';
+        name + '.js" async></script>';
     };
 
     var createLink = function( name ) {

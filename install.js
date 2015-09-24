@@ -12,6 +12,7 @@ var config = JSON.parse( fs.readFileSync( './q-config.json' ) );
 // Q_REPLACE_HUMAN -> My App
 // Q_REPLACE_SNAKECASED -> MY_APP
 // Q_REPLACE_TITLED -> MyApp
+// Q_REPLACE_UNDERSCORED -> my_app
 var substitutions = {},
     appName = config.appName;
 
@@ -25,7 +26,8 @@ substitutions['Q_REPLACE_HUMAN'] = ( function() {
   } );
   return res.charAt( 0 ).toUpperCase() + res.substring( 1 );
 } )();
-substitutions['Q_REPLACE_SNAKECASED'] = appName.replace( '-', '_' ).toUpperCase();
+substitutions['Q_REPLACE_UNDERSCORED'] = appName.replace( '-', '_' );
+substitutions['Q_REPLACE_SNAKECASED'] = substitutions['Q_REPLACE_UNDERSCORED'].toUpperCase();
 substitutions['Q_REPLACE_TITLED'] = substitutions['Q_REPLACE_CAMELCASED'].charAt( 0 ).toUpperCase() +
   substitutions['Q_REPLACE_CAMELCASED'].substring( 1 );
 

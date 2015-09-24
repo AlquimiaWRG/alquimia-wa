@@ -106,8 +106,7 @@ class Alquimia {
       _doing_it_wrong( 'Alquimia::__construct', 'The plugin name must be overridden', ALQUIMIA__VERSION );
     }
 
-    register_activation_hook( $this->plugin_dir . "$this->name.php", array( $this, 'activate' ) );
-    register_deactivation_hook( $this->plugin_dir . "$this->name.php", array( $this, 'deactivate' ) );
+    $this->init();
 
     if ( is_admin() ) {
       add_action( 'init', array( $this, 'rename_data' ) );
@@ -117,7 +116,6 @@ class Alquimia {
       add_action( 'admin_init', array( $this, 'add_application_url_setting' ) );
     }
 
-    add_action( 'plugins_loaded', array( $this, 'init' ) );
     add_action( 'init', array( $this, 'register_data' ) );
     add_action( 'wp_json_server_before_serve', array( $this, 'init_api' ) );
   }
@@ -144,15 +142,6 @@ class Alquimia {
    * Using them before (like in `__construct` or `init`) doesn't work.
    */
   public function add_translations() {}
-
-  /**
-   * Activation function, in case you want to add one just override this
-   */
-  public function activate() {}
-  /**
-   * Deactivation function, in case you want to add one just override this
-   */
-  public function deactivate() {}
 
   /**
    * Initializes the WP_REST_API custom endpoints, taking them from $api_endpoints
@@ -361,11 +350,15 @@ class Alquimia {
    * Adds the "Application address (URL)" to general settings, for the Angular integration.
    */
   public function add_application_url_setting() {
-    register_setting( 'general', 'application_url', 'esc_attr' );
+    register_setting( 'general', 'application_url', array( $this, 'sanitize_application_url_setting' ) );
     add_settings_field( 'application_url',
       '<label for="application_url">' . __( 'Application address (URL)', 'alquimia' ) . '</label>',
       array( $this, 'print_application_url_setting' ),
       'general' );
+  }
+
+  function sanitize_application_url_setting( $setting ) {
+    return trailingslashit( esc_attr( $setting ) );
   }
 
   /**
