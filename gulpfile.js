@@ -313,9 +313,10 @@ function path() {
 
 function inject() {
   return new Promise( function( fulfil ) {
+    var async = root == p.app ? '' : ' async';
     var createScript = function( name ) {
       return '<script type="text/javascript" src="' + p.scriptsDest + '/' +
-        name + '.js" async></script>';
+        name + '.js"' + async + '></script>';
     };
 
     var createLink = function( name ) {
